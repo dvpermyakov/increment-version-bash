@@ -1,5 +1,6 @@
 #!/bin/bash
 
+export TEMP_DIRECTORY=.tmp
 export REPOSITORY=https://github.com/dvpermyakov/public-poll-server.git
 export DEFAULT_BRANCH=feature/increase_version_2
 export FEATURE_BRANCH=feature/increase_version_2
@@ -24,8 +25,8 @@ function checkoutRepository() {
   git checkout -b "$FEATURE_BRANCH"
 }
 
-mkdir temp
-cd temp || exit
+mkdir "$TEMP_DIRECTORY"
+cd "$TEMP_DIRECTORY" || exit
 
 checkoutRepository
 incrementVersion
@@ -35,4 +36,4 @@ git commit -m "$COMMIT_NAME"
 git push origin "$FEATURE_BRANCH"
 
 cd ..
-rm -rf temp
+rm -rf "$TEMP_DIRECTORY"
