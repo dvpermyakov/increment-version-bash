@@ -1,45 +1,58 @@
 #!/bin/bash
 
-while getopts r:b: flag; do
+while getopts r:b:m:f: flag; do
   case "${flag}" in
   r) REPOSITORY=${OPTARG} ;;
-  b) DEFAULT_BRANCH=${OPTARG} ;;
+  b) BRANCH_CURRENT=${OPTARG} ;;
+  m) BRANCH_MASTER=${OPTARG} ;;
+  f) VERSION_FILE=${OPTARG} ;;
   esac
 done
 
 export TEMP_DIRECTORY=.tmp
 
-function checkoutRepository() {
+function cloneRepository() {
   git init
   git clone "$REPOSITORY"
   git remote add origin "$REPOSITORY"
   git fetch
-  git checkout "$DEFAULT_BRANCH"
-  git pull "$DEFAULT_BRANCH"
+}
+
+function checkoutMaster() {
+  git checkout "$BRANCH_MASTER"
+  git pull "$BRANCH_MASTER"
+}
+
+function checkoutCurrentVersion() {
+  git checkout "$BRANCH_CURRENT"
+  git pull "$BRANCH_CURRENT"
 }
 
 function pushChangesToRepository() {
   git add "$VERSION_FILE"
   git commit -m "$COMMIT_NAME"
-  git push origin "$DEFAULT_BRANCH"
+  git push origin "$BRANCH_CURRENT"
 }
 
 mkdir "$TEMP_DIRECTORY"
 cd "$TEMP_DIRECTORY" || exit
 
-checkoutRepository
+cloneRepository
 
-export VERSION_FILE=version.txt
-OLD_VERSION=$(cat $VERSION_FILE)
-NEW_VERSION="${OLD_VERSION%.*}.$((${OLD_VERSION##*.} + 1))"
+checkoutMaster
+MASTER_VERSION=$(cat $VERSION_FILE)
 
-export COMMIT_NAME="increase version $OLD_VERSION -> $NEW_VERSION"
+checkoutCurrentVersion
+CURRENT_VERSION=$(cat $VERSION_FILE)
 
-cat >$VERSION_FILE <<EOF
+if [ "$MASTER_VERSION" -ge "$CURRENT_VERSION" ]; then
+  NEW_VERSION="${CURRENT_VERSION%.*}.$((${CURRENT_VERSION##*.} + 1))"
+  export COMMIT_NAME="increase version $OLD_VERSION -> $NEW_VERSION"
+  cat >$VERSION_FILE <<EOF
 $NEW_VERSION
 EOF
-
-pushChangesToRepository
+  pushChangesToRepository
+fi
 
 cd ..
 rm -rf "$TEMP_DIRECTORY"
