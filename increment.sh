@@ -20,12 +20,12 @@ function cloneRepository() {
 
 function checkoutMaster() {
   git checkout "$BRANCH_MASTER"
-  git pull "$BRANCH_MASTER"
+  git pull
 }
 
 function checkoutCurrentVersion() {
   git checkout "$BRANCH_CURRENT"
-  git pull "$BRANCH_CURRENT"
+  git pull
 }
 
 function pushChangesToRepository() {
@@ -45,8 +45,8 @@ MASTER_VERSION=$(cat $VERSION_FILE)
 checkoutCurrentVersion
 CURRENT_VERSION=$(cat $VERSION_FILE)
 
-if [ "$MASTER_VERSION" -ge "$CURRENT_VERSION" ]; then
-  NEW_VERSION="${CURRENT_VERSION%.*}.$((${CURRENT_VERSION##*.} + 1))"
+if [ "$MASTER_VERSION" == "$CURRENT_VERSION" -o "$MASTER_VERSION" \> "$CURRENT_VERSION" ]; then
+  NEW_VERSION="${MASTER_VERSION%.*}.$((${MASTER_VERSION##*.} + 1))"
   export COMMIT_NAME="increase version $OLD_VERSION -> $NEW_VERSION"
   cat >$VERSION_FILE <<EOF
 $NEW_VERSION
