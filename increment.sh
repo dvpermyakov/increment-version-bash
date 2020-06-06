@@ -1,23 +1,27 @@
 #!/bin/bash
 
+while getopts r:b: flag; do
+  case "${flag}" in
+  r) REPOSITORY=${OPTARG} ;;
+  b) DEFAULT_BRANCH=${OPTARG} ;;
+  esac
+done
+
 export TEMP_DIRECTORY=.tmp
-export REPOSITORY=https://github.com/dvpermyakov/public-poll-server.git
-export DEFAULT_BRANCH=master
 
 function checkoutRepository() {
   git init
-  git clone $REPOSITORY
-  git remote add origin $REPOSITORY
+  git clone "$REPOSITORY"
+  git remote add origin "$REPOSITORY"
   git fetch
   git checkout "$DEFAULT_BRANCH"
-  git pull
+  git pull "$DEFAULT_BRANCH"
 }
 
 function pushChangesToRepository() {
-  git checkout -b "$FEATURE_BRANCH"
   git add "$VERSION_FILE"
   git commit -m "$COMMIT_NAME"
-  git push origin "$FEATURE_BRANCH"
+  git push origin "$DEFAULT_BRANCH"
 }
 
 mkdir "$TEMP_DIRECTORY"
@@ -29,7 +33,6 @@ export VERSION_FILE=version.txt
 OLD_VERSION=$(cat $VERSION_FILE)
 NEW_VERSION="${OLD_VERSION%.*}.$((${OLD_VERSION##*.} + 1))"
 
-export FEATURE_BRANCH=feature/increment_version_$NEW_VERSION
 export COMMIT_NAME="increase version $OLD_VERSION -> $NEW_VERSION"
 
 cat >$VERSION_FILE <<EOF
