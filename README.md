@@ -1,5 +1,5 @@
 # Increment version script
-----------------------------
+
 This script allows you to automatically incement a version of your library or project. 
 You need to create a file **version.txt** inside your repository.
 Format of string inside file is (major version).(minor version).(patch version):
